@@ -10,8 +10,7 @@
  */
 
 #import "ViewController.h"
-#import "ASLayoutSpec.h"
-#import "ASStaticLayoutSpec.h"
+#import <AsyncDisplayKit/AsyncDisplayKit.h>
 
 @interface ViewController()<ASVideoNodeDelegate>
 @property (nonatomic, strong) ASDisplayNode *rootNode;
@@ -22,12 +21,23 @@
 
 #pragma mark - UIViewController
 
-- (void)viewWillAppear:(BOOL)animated
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
-  [super viewWillAppear:animated];
+  self = [super initWithNibName:nil bundle:nil];
+  if (self) {
 
+    
+  }
+  return self;
+}
+
+- (void)viewDidLoad
+{
+  [super viewDidLoad];
+  
   // Root node for the view controller
   _rootNode = [ASDisplayNode new];
+  _rootNode.frame = self.view.bounds;
   _rootNode.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
   
   ASVideoNode *guitarVideoNode = self.guitarVideoNode;
@@ -38,7 +48,6 @@
   
   // Video node with custom play button
   ASVideoNode *simonVideoNode = self.simonVideoNode;
-  simonVideoNode.playButton = self.playButton;
   [_rootNode addSubnode:simonVideoNode];
   
   _rootNode.layoutSpecBlock = ^ASLayoutSpec *(ASDisplayNode * _Nonnull node, ASSizeRange constrainedSize) {
@@ -53,16 +62,6 @@
     return [ASStaticLayoutSpec staticLayoutSpecWithChildren:@[guitarVideoNode, nicCageVideoNode, simonVideoNode]];
   };
   [self.view addSubnode:_rootNode];
-}
-
-- (void)viewDidLayoutSubviews
-{
-  [super viewDidLayoutSubviews];
-  
-  // After all subviews are layed out we have to measure it and move the root node to the right place
-  CGSize viewSize = self.view.bounds.size;
-  [self.rootNode measureWithSizeRange:ASSizeRangeMake(viewSize, viewSize)];
-  [self.rootNode setNeedsLayout];
 }
 
 #pragma mark - Getter / Setter
@@ -129,7 +128,7 @@
 
 #pragma mark - Actions
 
-- (void)videoNodeWasTapped:(ASVideoNode *)videoNode
+- (void)didTapVideoNode:(ASVideoNode *)videoNode
 {
   if (videoNode == self.guitarVideoNode) {
     if (videoNode.playerState == ASVideoNodePlayerStatePlaying) {
@@ -150,29 +149,29 @@
 
 #pragma mark - ASVideoNodeDelegate
 
-- (void)videoNode:(ASVideoNode *)videoNode willChangePlayerState:(ASVideoNodePlayerState)state toState:(ASVideoNodePlayerState)toSate
+- (void)videoNode:(ASVideoNode *)videoNode willChangePlayerState:(ASVideoNodePlayerState)state toState:(ASVideoNodePlayerState)toState
 {
   //Ignore nicCageVideo
   if (videoNode != _guitarVideoNode) {
     return;
   }
   
-  if (toSate == ASVideoNodePlayerStatePlaying) {
+  if (toState == ASVideoNodePlayerStatePlaying) {
     NSLog(@"guitarVideoNode is playing");
-  } else if (toSate == ASVideoNodePlayerStateFinished) {
+  } else if (toState == ASVideoNodePlayerStateFinished) {
     NSLog(@"guitarVideoNode finished");
-  } else if (toSate == ASVideoNodePlayerStateLoading) {
+  } else if (toState == ASVideoNodePlayerStateLoading) {
     NSLog(@"guitarVideoNode is buffering");
   }
 }
 
-- (void)videoNode:(ASVideoNode *)videoNode didPlayToSecond:(NSTimeInterval)second
+- (void)videoNode:(ASVideoNode *)videoNode didPlayToTimeInterval:(NSTimeInterval)timeInterval
 {
   if (videoNode != _guitarVideoNode) {
     return;
   }
   
-  NSLog(@"guitarVideoNode playback time is: %f",second);
+  NSLog(@"guitarVideoNode playback time is: %f",timeInterval);
 }
 
 @end
